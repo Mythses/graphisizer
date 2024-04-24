@@ -1,0 +1,93 @@
+<!doctype html>
+
+<form action="/action_page.php">
+  <label for="fname">Event:</label>
+  <input type="text" id="event" name="event"><br><br>
+  <label for="lname">WCA ID:</label>
+  <input type="text" id="wcaid" name="wcaid"><br><br>
+  <label for="lname">Type:</label>
+  <input type="text" id="type" name="type"><br><br>
+  <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value)" type="button" value="Submit" id="submit">
+</form>
+
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+var progressChart = null;
+//const button = document.getElementById('submit');
+//button.onclick = function()alert("test")//= loadChart("2022YAOC02","333","average");
+  function loadChart(wcaId, event, type){
+
+  if(progressChart!=null){
+    progressChart.destroy();
+    }
+
+    function filter(data){
+      //var event = '333'
+      //var type = 'average'
+      
+
+      var solveTimes = [];
+      var compNames = [];    
+      let i = 0
+      for (let comp in data.results){
+        if (Object.keys(data.results[Object.keys(data.results)[i]]).includes(event)){
+          for (x = 0; x < data.results[Object.keys(data.results)[i]][event].length; x++){
+            solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
+            compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
+          }
+        }
+        //console.log(solveTimes)
+        i++
+      }
+
+      //console.log(solveTimes)
+
+      const canvas = document.getElementById('myChart');
+      ctx = canvas.getContext("2d")
+      //ctx.getContext("2d").ctx.clearRect(0, 0, ctx.width, ctx.height);
+      progressChart = new Chart(ctx, {
+        type: 'line',
+        //labels = Utils.months({count: 7}),
+        data: {
+            labels: compNames.reverse(),
+            datasets: [
+                {
+                label: wcaId + ' ' + event + ' ' + type,
+                data: solveTimes.reverse(),
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+                }
+          ]
+        },
+
+      });
+    }
+    //alert(wcaId)
+    //var wcaId = '2018YAOC02'
+    let apiUrl = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/master/api/persons/${wcaId}.json`;
+
+
+    // Make a GET request
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        filter(data);
+        //apiData = data;
+        //console.log(apiData)
+      })
+      .catch(error => console.error('Error fetching WCA api:', error));
+
+    /*for (let i = 0; i < apiData.rank.averages.length; i++) {
+      if (apiData.rank.averages[i].eventId = "333"){
+        event = 
+      }
+    }*/
+}
+</script>

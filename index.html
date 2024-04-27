@@ -2,11 +2,32 @@
 
 <form action="/action_page.php">
   <label for="fname">Event:</label>
-  <input type="text" id="event" name="event"><br><br>
+  <select name="event" id="event">
+  <option value="333">3x3</option>
+  <option value="222">2x2</option>
+  <option value="pyram">Pyraminx</option>
+  <option value="sq1">Square-1</option>
+  <option value="minx">Megaminx</option>
+  <option value="skewb">Skewb</option>
+  <option value="clock">clock</option>
+  <option value="444">4x4</option>
+  <option value="555">5x5</option>
+  <option value="666">6x6</option>
+  <option value="777">7x7</option>
+  <option value="333bf">3x3 Blind</option>
+  <option value="444bf">4x4 Blind</option>
+  <option value="555bf">5x5 Blind</option>
+  <option value="333mbf">3x3 Multiblind</option>
+  <option value="333fm">3x3 FMC</option>
+  <option value="333oh">3x3 OH</option>
+</select><br><br>
   <label for="lname">WCA ID:</label>
   <input type="text" id="wcaid" name="wcaid"><br><br>
   <label for="lname">Type:</label>
-  <input type="text" id="type" name="type"><br><br>
+  <select name="type" id="type">
+  <option value="average">average</option>
+  <option value="best">single</option>
+</select><br><br>
   <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value)" type="button" value="Submit" id="submit">
 </form>
 

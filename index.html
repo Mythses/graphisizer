@@ -68,8 +68,10 @@ var progressChart = null;
 
       //console.log(solveTimes)
       if (event == "333fm" || type == "best"){
+        let x = 0;
         for (let time in solveTimes){
-          time = time * 100
+          solveTimes[x] = time * 100;
+          x++;
         }
       }
 

@@ -67,6 +67,11 @@ var progressChart = null;
       }
 
       //console.log(solveTimes)
+      if (event == "333fm" || type == "best"){
+        for (let time in solveTimes){
+          time = time * 100
+        }
+      }
 
       const canvas = document.getElementById('myChart');
       ctx = canvas.getContext("2d")

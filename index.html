@@ -42,7 +42,10 @@ var progressChart = null;
 //const button = document.getElementById('submit');
 //button.onclick = function()alert("test")//= loadChart("2022YAOC02","333","average");
   function loadChart(wcaId, event, type){
-
+  if (event == "333mbf"){
+    type = "best";
+    document.getElementById('type').value = "best";
+  }
   if(progressChart!=null){
     progressChart.destroy();
     }

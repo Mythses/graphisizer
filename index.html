@@ -58,7 +58,9 @@ var progressChart = null;
       for (let comp in data.results){
         if (Object.keys(data.results[Object.keys(data.results)[i]]).includes(event)){
           for (x = 0; x < data.results[Object.keys(data.results)[i]][event].length; x++){
-            solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
+            if (!(event == "333fm" || type == "best")){
+              solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
+            }
             compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
           }
         }
@@ -67,13 +69,6 @@ var progressChart = null;
       }
 
       //console.log(solveTimes)
-      if (event == "333fm" || type == "best"){
-        let x = 0;
-        for (let time in solveTimes){
-          solveTimes[x] = time * 100;
-          x++;
-        }
-      }
 
       const canvas = document.getElementById('myChart');
       ctx = canvas.getContext("2d")

@@ -58,11 +58,11 @@ var progressChart = null;
       for (let comp in data.results){
         if (Object.keys(data.results[Object.keys(data.results)[i]]).includes(event)){
           for (x = 0; x < data.results[Object.keys(data.results)[i]][event].length; x++){
-            /*if (event == "333fm" || type == "best"){
+            if ((event == "333fm") || (type == "best")){
               solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type]));
-            }else{*/
-            solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
-            //}
+            }else{
+              solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
+            }
             compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
           }
         }

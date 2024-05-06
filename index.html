@@ -42,6 +42,11 @@ var progressChart = null;
 //const button = document.getElementById('submit');
 //button.onclick = function()alert("test")//= loadChart("2022YAOC02","333","average");
   function loadChart(wcaId, event, type){
+  function secToMin(sec) {
+	var min = Math.floor(sec / 60);
+    sec = sec % 60;
+    return ((min < 10) ? "0"+min : min) + ":" + ((sec < 10) ? "0"+sec : sec);
+}
   if (event == "333mbf"){
     type = "best";
     document.getElementById('type').value = "best";
@@ -73,7 +78,7 @@ var progressChart = null;
               console.log("3");
               solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type]));
             }else{
-              solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
+              secToMin(solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100));
             }
             compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
           }

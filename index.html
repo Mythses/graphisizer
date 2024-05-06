@@ -78,7 +78,7 @@ var progressChart = null;
               console.log("3");
               solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type]));
             }else{
-              secToMin(solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100));
+              solveTimes.push(secToMin((data.results[Object.keys(data.results)[i]][event][x][type])/100));
             }
             compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
           }

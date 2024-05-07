@@ -28,7 +28,11 @@
   <option value="average">average</option>
   <option value="best">single</option>
 </select><br><br>
-  <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value)" type="button" value="Submit" id="submit">
+  <select name="Show DNFs?" id="showdnfs">
+  <option value=true>Yes</option>
+  <option value="false">No</option>
+</select><br><br>
+  <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value,document.getElementById('showdnfs').value)" type="button" value="Submit" id="submit">
 </form>
 
 <div>
@@ -41,7 +45,7 @@
 var progressChart = null;
 //const button = document.getElementById('submit');
 //button.onclick = function()alert("test")//= loadChart("2022YAOC02","333","average");
-  function loadChart(wcaId, event, type){
+  function loadChart(wcaId, event, type, showdnfs){
   function secToMin(sec) {
 	var min = Math.floor(sec / 60);
     sec = sec % 60;
@@ -74,13 +78,15 @@ var progressChart = null;
             if (type == "best"){
               console.log("2")
             }*/
-            if ((event == "333fm") || (type == "best")){
+	    if (!(!showdnfs || (data.results[Object.keys(data.results)[i]][event][x][type]) == -1)){
+	    if ((event == "333fm") || (type == "best")){
               console.log("3");
               solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type]));
             }else{
               solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
             }
-            compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
+	    compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
+	    }
           }
         }
         //console.log(solveTimes)

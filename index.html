@@ -81,9 +81,9 @@ var progressChart = null;
             }*/
 		console.log(showdnfs);
 		  console.log(!showdnfs);
-	    if (!((!showdnfs) || ((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0)){
+	    if (!((!showdnfs) && ((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0)){
 		    console.log("1");
-	    if ((event == "333fm") || (type == "best")){
+	    if ((event == "333fm") && (type == "best")){
               console.log("3");
               solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type]));
             }else{

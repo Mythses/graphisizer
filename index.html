@@ -30,8 +30,8 @@
 </select><br><br>
   <label for="lname">Show DNFs:</label>
   <select name="Show DNFs?" id="showdnfs">
-  <option value=true>Yes</option>
-  <option value=false>No</option>
+  <option value="True">Yes</option>
+  <option value="False">No</option>
 </select><br><br>
   <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value,document.getElementById('showdnfs').value)" type="button" value="Submit" id="submit">
 </form>
@@ -79,10 +79,15 @@ var progressChart = null;
             if (type == "best"){
               console.log("2")
             }*/
-		console.log(showdnfs);
-		  console.log(!showdnfs);
+		//console.log((showdnfs));
+    //console.log(showdnfs == "False");
+		  /*console.log(!Boolean(showdnfs));
 		  console.log(data.results[Object.keys(data.results)[i]][event][x][type]);
-	    if (!((!showdnfs) && ((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0)){
+      console.log(Boolean(((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0))
+      if ((data.results[Object.keys(data.results)[i]][event][x][type]) <= 0){
+			console.log("2")
+		  }*/
+	    if (!((showdnfs == "False") && ((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0)){
 		    console.log("1");
 	    if ((event == "333fm") && (type == "best")){
               console.log("3");

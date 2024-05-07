@@ -30,8 +30,8 @@
 </select><br><br>
   <label for="lname">Show DNFs:</label>
   <select name="Show DNFs?" id="showdnfs">
-  <option value=true>Yes</option>
-  <option value="false">No</option>
+  <option value=new Boolean(true)>Yes</option>
+  <option value=new Boolean(false)>No</option>
 </select><br><br>
   <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value,document.getElementById('showdnfs').value)" type="button" value="Submit" id="submit">
 </form>

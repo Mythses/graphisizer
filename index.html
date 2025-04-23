@@ -109,22 +109,22 @@
         function formatTime(value, event) {
             if (value <= 0) return "DNF"; // Handle DNF values explicitly
             if (event === "333fm" || event === "333mbf") {
-                 // FMC is moves, MBLD is points (decoded later) - return as is for now
-                 // MBLD specific formatting might be needed if API provides raw data
-                 if (event === "333mbf") {
+                // FMC is moves, MBLD is points (decoded later) - return as is for now
+                // MBLD specific formatting might be needed if API provides raw data
+                if (event === "333mbf") {
                     // Example MBLD decode: 99 - (difference * 100 + time) / 10000000
                     // Assuming 'value' here is the direct result number like 197052103
                     // This requires understanding the exact encoding used in the API source
                     // For simplicity, just display the raw value or a placeholder
                     // return `MBLD: ${value}`; // Placeholder
-                     let difference = Math.floor(value / 100000000); // DD
-                     let points = 99 - difference;
-                     let timeSeconds = (value % 10000000) / 100; // TTTTT.ss
-                     let missed = (value % 100000000 - value % 10000000) / 10000000; // MM
-                     let solved = points + missed;
-                     return `${solved}/${solved+missed} ${formatTime(timeSeconds, 'time')}`; // Format time part
-                 }
-                 return value; // Return FMC moves as is
+                    let difference = Math.floor(value / 100000000); // DD
+                    let points = 99 - difference;
+                    let timeSeconds = (value % 10000000) / 100; // TTTTT.ss
+                    let missed = (value % 100000000 - value % 10000000) / 10000000; // MM
+                    let solved = points + missed;
+                    return `<span class="math-inline">\{solved\}/</span>{solved+missed} ${formatTime(timeSeconds, 'time')}`; // Format time part
+                }
+                return value; // Return FMC moves as is
             }
 
             // Standard time formatting
@@ -134,7 +134,7 @@
             if (seconds >= 60) {
                 const minutes = Math.floor(seconds / 60);
                 const remainingSeconds = (seconds % 60).toFixed(2);
-                return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+                return `<span class="math-inline">\{minutes\}\:</span>{remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
             } else {
                 return seconds.toFixed(2);
             }
@@ -197,16 +197,16 @@
                     messageArea.textContent = `Error: ${error.message}. Could not load data for ${wcaId}. Check the ID or API source.`;
                     messageArea.className = 'text-center mb-4 text-red-600 font-medium';
                     // Clear canvas if error occurs after chart init attempt
-                     if (progressChart) {
+                    if (progressChart) {
                         progressChart.destroy();
                         progressChart = null;
-                     } else {
-                         // Ensure canvas is blank if it never got drawn
-                         ctx.clearRect(0, 0, canvas.width, canvas.height);
-                     }
+                    } else {
+                        // Ensure canvas is blank if it never got drawn
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
                 })
                 .finally(() => {
-                     submitButton.disabled = false; // Re-enable button
+                    submitButton.disabled = false; // Re-enable button
                 });
         }
 
@@ -219,15 +219,15 @@
 
             for (const compKey of compKeys) {
                 const compResult = data.results[compKey];
-                 // Check if the event exists for this competition
+                // Check if the event exists for this competition
                 if (compResult && compResult[event] && Array.isArray(compResult[event])) {
                     compResult[event].forEach(roundResult => {
                         // Check if the result type (best/average) exists and is valid
                         if (roundResult && roundResult.hasOwnProperty(type)) {
                             const value = roundResult[type];
 
-                             // Filter DNFs based on selection
-                             // WCA API uses 0 or negative for DNF/DNS
+                            // Filter DNFs based on selection
+                            // WCA API uses 0 or negative for DNF/DNS
                             if (showdnfs === "False" && value <= 0) {
                                 return; // Skip this DNF result
                             }
@@ -251,16 +251,15 @@
                 }
             }
 
-             if (solveData.length === 0) {
-                 messageArea.textContent = `No results found for ${wcaId} in ${event} (${type}).`;
-                 messageArea.className = 'text-center mb-4 text-orange-600 font-medium';
-                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas explicitly
-                 return; // Stop if no data to plot
-             }
+            if (solveData.length === 0) {
+                messageArea.textContent = `No results found for ${wcaId} in <span class="math-inline">\{event\} \(</span>{type}).`;
+                messageArea.className = 'text-center mb-4 text-orange-600 font-medium';
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas explicitly
+                return; // Stop if no data to plot
+            }
 
-            // Sort data chronologically if needed (API seems sorted, but good practice)
-            // Assuming compKeys are roughly chronological; if not, date parsing is needed.
-            // For this API structure, the order seems correct as processed.
+            // Reverse the array to make it chronological
+            solveData.reverse();
 
             // --- Draw Chart ---
             progressChart = new Chart(ctx, {
@@ -268,7 +267,7 @@
                 data: {
                     // Use the processed solveData directly
                     datasets: [{
-                        label: `${wcaId} - ${event.toUpperCase()} (${type})`,
+                        label: `${wcaId} - <span class="math-inline">\{event\.toUpperCase\(\)\} \(</span>{type})`,
                         data: solveData, // Data points {x: label, y: value}
                         borderColor: 'rgb(59, 130, 246)', // Blue color
                         backgroundColor: 'rgba(59, 130, 246, 0.1)', // Light blue fill
@@ -309,9 +308,9 @@
                                 callback: function(value, index, values) {
                                     // Don't format FMC/MBLD axis, but format time axes
                                     if (event === '333fm' || event === '333mbf') {
-                                         if (event === '333mbf' && value > 1000) { // Basic check for raw MBLD value
-                                             return formatTime(value, event); // Attempt MBLD format
-                                         }
+                                        if (event === '333mbf' && value > 1000) { // Basic check for raw MBLD value
+                                            return formatTime(value, event); // Attempt MBLD format
+                                        }
                                         return value; // Return raw number for FMC/MBLD
                                     }
                                     // Only format if it's not a DNF placeholder (like 0 or negative)
@@ -344,7 +343,7 @@
                         legend: {
                             position: 'top',
                         },
-                        title: { // Chart title (optional, can use HTML title)
+                        title: { // Chart
                             display: true,
                             text: `Progress for ${wcaId} - ${event.toUpperCase()} (${type})`,
                             font: { size: 16 }

@@ -1,151 +1,488 @@
 <!doctype html>
-
-<form action="/action_page.php">
-  <label for="fname">Event:</label>
-  <select name="event" id="event">
-  <option value="333">3x3</option>
-  <option value="222">2x2</option>
-  <option value="pyram">Pyraminx</option>
-  <option value="sq1">Square-1</option>
-  <option value="minx">Megaminx</option>
-  <option value="skewb">Skewb</option>
-  <option value="clock">clock</option>
-  <option value="444">4x4</option>
-  <option value="555">5x5</option>
-  <option value="666">6x6</option>
-  <option value="777">7x7</option>
-  <option value="333bf">3x3 Blind</option>
-  <option value="444bf">4x4 Blind</option>
-  <option value="555bf">5x5 Blind</option>
-  <option value="333mbf">3x3 Multiblind</option>
-  <option value="333fm">3x3 FMC</option>
-  <option value="333oh">3x3 OH</option>
-</select><br><br>
-  <label for="lname">WCA ID:</label>
-  <input type="text" id="wcaid" name="wcaid"><br><br>
-  <label for="lname">Type:</label>
-  <select name="type" id="type">
-  <option value="average">average</option>
-  <option value="best">single</option>
-</select><br><br>
-  <label for="lname">Show DNFs:</label>
-  <select name="Show DNFs?" id="showdnfs">
-  <option value="True">Yes</option>
-  <option value="False">No</option>
-</select><br><br>
-  <input onclick="loadChart(document.getElementById('wcaid').value,document.getElementById('event').value,document.getElementById('type').value,document.getElementById('showdnfs').value)" type="button" value="Submit" id="submit">
-</form>
-
-<div>
-  <canvas id="myChart"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-var progressChart = null;
-//const button = document.getElementById('submit');
-//button.onclick = function()alert("test")//= loadChart("2022YAOC02","333","average");
-  function loadChart(wcaId, event, type, showdnfs){
-  function secToMin(sec) {
-	var min = Math.floor(sec / 60);
-    sec = sec % 60;
-    return ((min < 10) ? "0"+min : min) + ":" + ((sec < 10) ? "0"+sec : sec);
-}
-  if (event == "333mbf"){
-    type = "best";
-    document.getElementById('type').value = "best";
-  }
-  if(progressChart!=null){
-    progressChart.destroy();
-    }
-
-    function filter(data){
-      //var event = '333'
-      //var type = 'average'
-      
-
-      var solveTimes = [];
-      var compNames = [];    
-      let i = 0
-      for (let comp in data.results){
-        if (Object.keys(data.results[Object.keys(data.results)[i]]).includes(event)){
-          for (x = 0; x < data.results[Object.keys(data.results)[i]][event].length; x++){
-            /*console.log(event);
-            console.log(type);
-            if (event == "333fm"){
-              console.log("1")
-            }
-            if (type == "best"){
-              console.log("2")
-            }*/
-		//console.log((showdnfs));
-    //console.log(showdnfs == "False");
-		  /*console.log(!Boolean(showdnfs));
-		  console.log(data.results[Object.keys(data.results)[i]][event][x][type]);
-      console.log(Boolean(((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0))
-      if ((data.results[Object.keys(data.results)[i]][event][x][type]) <= 0){
-			console.log("2")
-		  }*/
-	    if (!((showdnfs == "False") && ((data.results[Object.keys(data.results)[i]][event][x][type])) <= 0)){
-		    console.log("1");
-	    if ((event == "333fm") && (type == "best")){
-              console.log("3");
-              solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type]));
-            }else{
-              solveTimes.push((data.results[Object.keys(data.results)[i]][event][x][type])/100);
-            }
-	    compNames.push(comp+' '+data.results[Object.keys(data.results)[i]][event][x].round);
-	    }
-          }
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCA Progress Chart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* Apply Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Lighter gray background */
         }
-        //console.log(solveTimes)
-        i++
-      }
+        /* Custom styles for Chart.js tooltips */
+        .chartjs-tooltip {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none; /* Prevent tooltip from blocking interactions */
+        }
+        .chartjs-tooltip-key {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 6px;
+            border-radius: 3px;
+        }
+        /* Ensure canvas is responsive and fits container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+        canvas#progressChart {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        /* Style select dropdown arrow */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        /* Loading Spinner Style */
+         #loadingIndicator svg {
+            animation: spin 1s linear infinite;
+         }
+         @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+         }
+         /* Button group styling */
+         .button-group {
+            display: flex;
+            gap: 0.5rem; /* Space between buttons */
+         }
+         .button-group button {
+             flex-grow: 1; /* Allow buttons to grow */
+         }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="p-4 md:p-8">
 
-      //console.log(solveTimes)
+    <div class="max-w-7xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-900">WCA Progress Viewer</h1>
 
-      const canvas = document.getElementById('myChart');
-      ctx = canvas.getContext("2d")
-      //ctx.getContext("2d").ctx.clearRect(0, 0, ctx.width, ctx.height);
-      progressChart = new Chart(ctx, {
-        type: 'line',
-        //labels = Utils.months({count: 7}),
-        data: {
-            labels: compNames.reverse(),
-            datasets: [
-                {
-                label: wcaId + ' ' + event + ' ' + type,
-                data: solveTimes.reverse(),
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
+        <form id="wcaForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8 items-end">
+            <div class="lg:col-span-2">
+                <label for="wcaids" class="block text-sm font-medium text-gray-700 mb-1">WCA ID(s)</label>
+                <input type="text" id="wcaids" name="wcaids" placeholder="e.g., 2022YAOC02, 2019SMIT01" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition duration-150 ease-in-out" required>
+                <p class="text-xs text-gray-500 mt-1">Enter one or more WCA IDs, separated by commas.</p>
+            </div>
+            <div>
+                <label for="event" class="block text-sm font-medium text-gray-700 mb-1">Event</label>
+                <select name="event" id="event" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white transition duration-150 ease-in-out">
+                    <option value="333">3x3x3 Cube</option>
+                    <option value="222">2x2x2 Cube</option>
+                    <option value="444">4x4x4 Cube</option>
+                    <option value="555">5x5x5 Cube</option>
+                    <option value="666">6x6x6 Cube</option>
+                    <option value="777">7x7x7 Cube</option>
+                    <option value="333bf">3x3x3 Blindfolded</option>
+                    <option value="333fm">3x3x3 Fewest Moves</option>
+                    <option value="333oh">3x3x3 One-Handed</option>
+                    <option value="clock">Clock</option>
+                    <option value="minx">Megaminx</option>
+                    <option value="pyram">Pyraminx</option>
+                    <option value="skewb">Skewb</option>
+                    <option value="sq1">Square-1</option>
+                    <option value="444bf">4x4x4 Blindfolded</option>
+                    <option value="555bf">5x5x5 Blindfolded</option>
+                    <option value="333mbf">3x3x3 Multi-Blind</option>
+                </select>
+            </div>
+            <div>
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Result Type</label>
+                <select name="type" id="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white transition duration-150 ease-in-out">
+                    <option value="average">Average</option>
+                    <option value="best">Single</option>
+                    </select>
+            </div>
+            <div>
+                <label for="showdnfs" class="block text-sm font-medium text-gray-700 mb-1">Show DNFs/DNSs</label>
+                <select name="showdnfs" id="showdnfs" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white transition duration-150 ease-in-out">
+                    <option value="true">Yes (Show as Gaps)</option>
+                    <option value="false">No (Hide Points)</option>
+                </select>
+            </div>
+            <div class="lg:col-start-5 flex flex-col sm:flex-row gap-2">
+                 <button type="button" id="loadChartBtn" class="w-full sm:w-auto inline-flex justify-center py-2.5 px-5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+                    Load Chart
+                </button>
+                 <button type="button" id="addToChartBtn" class="w-full sm:w-auto inline-flex justify-center py-2.5 px-5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Add to Chart
+                </button>
+            </div>
+        </form>
+
+        <div id="messageArea" class="mb-4 text-center text-sm min-h-[20px]"></div>
+         <div id="loadingIndicator" class="flex items-center justify-center text-gray-600 mb-4 hidden">
+            <svg class="h-5 w-5 text-indigo-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading data...
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+             <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-6 text-xs text-gray-500 text-center">
+            Note: This tool plots historical results (times/moves). Due to API limitations (<a href="https://github.com/robiningelbrecht/wca-rest-api" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">robiningelbrecht/wca-rest-api</a>), plotting historical rank progress is not currently possible.
+        </div>
+    </div>
+
+    <script>
+        // Global variable to hold the chart instance
+        let progressChart = null;
+        // Define more distinct colors for the chart lines
+        const chartColors = [
+            '#4f46e5', '#db2777', '#16a34a', '#d97706', '#0ea5e9',
+            '#6d28d9', '#dc2626', '#64748b', '#e11d48', '#2563eb',
+            '#4d7c0f', '#b45309', '#0891b2', '#7e22ce', '#be123c',
+            '#475569'
+        ];
+        let currentDatasetCount = 0; // Track datasets for color assignment
+
+        // DOM Elements
+        const form = document.getElementById('wcaForm');
+        const wcaIdsInput = document.getElementById('wcaids');
+        const eventSelect = document.getElementById('event');
+        const typeSelect = document.getElementById('type');
+        const showDnfsSelect = document.getElementById('showdnfs');
+        const loadChartBtn = document.getElementById('loadChartBtn');
+        const addToChartBtn = document.getElementById('addToChartBtn');
+        const messageArea = document.getElementById('messageArea');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const canvas = document.getElementById('progressChart');
+        const ctx = canvas.getContext('2d');
+
+        // --- Formatting Functions (unchanged) ---
+        function formatTime(centiseconds) {
+            if (centiseconds === -1) return "DNF";
+            if (centiseconds === -2) return "DNS";
+            if (centiseconds <= 0) return "N/A";
+            const totalSeconds = centiseconds / 100;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = (totalSeconds % 60);
+            if (minutes > 0) return `${minutes}:${seconds.toFixed(2).padStart(5, '0')}`;
+            return `${seconds.toFixed(2)}`;
+        }
+        function formatFmc(moves) {
+             if (moves === -1) return "DNF"; if (moves === -2) return "DNS"; if (moves <= 0) return "N/A";
+            return `${moves} moves`;
+        }
+        function formatMbld(value) {
+             if (value === -1) return "DNF"; if (value === -2) return "DNS"; if (value <= 0) return "N/A";
+            const s = value.toString().padStart(9, '0');
+            const difference = 99 - parseInt(s.substring(0, 2), 10);
+            const timeInSeconds = parseInt(s.substring(2, 7), 10);
+            const missed = parseInt(s.substring(7, 9), 10);
+            const solved = difference + missed; const attempted = solved + missed;
+            const points = 99 - parseInt(s.substring(0, 2), 10);
+            const minutes = Math.floor(timeInSeconds / 60); const seconds = timeInSeconds % 60;
+            const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            return `${points} pts (${solved}/${attempted} ${formattedTime})`;
+         }
+
+        // --- Data Fetching and Processing (Minor changes for flexibility) ---
+        async function fetchWcaData(wcaId) {
+            // (Function remains the same as previous version)
+            const apiUrl = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/master/api/persons/${wcaId.toUpperCase()}.json`;
+            try {
+                const response = await fetch(apiUrl, { cache: "no-cache" });
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error(`WCA ID ${wcaId} not found.`);
+                    throw new Error(`Failed to fetch data for ${wcaId} (Status: ${response.status})`);
                 }
-          ]
-        },
+                const data = await response.json();
+                if (!data || !data.results || !data.person) throw new Error(`Invalid data format received for ${wcaId}.`);
+                data.personName = data.person.name || wcaId; // Add name
+                return data;
+            } catch (error) {
+                console.error(`Error fetching WCA data for ${wcaId}:`, error);
+                setMessage(`Error for ${wcaId}: ${error.message}`, 'error');
+                return null;
+            }
+        }
 
-      });
-    }
-    //alert(wcaId)
-    //var wcaId = '2018YAOC02'
-    let apiUrl = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/master/api/persons/${wcaId.toUpperCase()}.json`;
+        function processData(data, eventId, resultType, includeDnfs) {
+            // (Function remains the same as previous version)
+            const results = [];
+            const competitions = data.results || {};
+            const competitionIds = Object.keys(competitions).sort();
+            competitionIds.forEach(compId => {
+                const compResults = competitions[compId];
+                if (compResults[eventId]) {
+                    compResults[eventId].forEach(roundResult => {
+                        const value = roundResult[resultType];
+                        if (!includeDnfs && value <= 0) return;
+                        const plotValue = (value !== undefined && value > 0) ? value : null;
+                        let yAxisValue = null;
+                        if (plotValue !== null) {
+                            if (eventId === '333fm' || eventId === '333mbf') yAxisValue = plotValue;
+                            else yAxisValue = plotValue / 100;
+                        }
+                        results.push({
+                            x: `${compId} (${roundResult.round})`, y: yAxisValue, rawValue: value
+                        });
+                    });
+                }
+            });
+            return results;
+        }
+
+        // --- UI Helper Functions ---
+        function setMessage(text, type = 'info') {
+            messageArea.textContent = text;
+            messageArea.className = `mb-4 text-center text-sm min-h-[20px] ${type === 'error' ? 'text-red-600 font-medium' : 'text-gray-600'}`;
+        }
+
+        function setLoadingState(isLoading) {
+             if (isLoading) {
+                loadingIndicator.classList.remove('hidden');
+                loadChartBtn.disabled = true;
+                addToChartBtn.disabled = true; // Disable both while loading
+             } else {
+                loadingIndicator.classList.add('hidden');
+                loadChartBtn.disabled = false;
+                // Only enable "Add to Chart" if a chart exists
+                addToChartBtn.disabled = !progressChart;
+             }
+        }
+
+        // --- Chart Update Logic ---
+        /**
+         * Fetches data for the current form selections and prepares datasets.
+         * @returns {Promise<{newLabels: Set<string>, newDatasets: Array<object>}>}
+         */
+        async function prepareChartData() {
+            const wcaIdString = wcaIdsInput.value.trim();
+            const eventId = eventSelect.value;
+            let resultType = typeSelect.value; // Let it be mutable for FMC/MBLD override
+            const showDnfs = showDnfsSelect.value === 'true';
+
+            const newDatasets = [];
+            const newLabels = new Set();
+
+            if (!wcaIdString) {
+                setMessage('Please enter at least one WCA ID.', 'error');
+                return { newLabels, newDatasets }; // Return empty data
+            }
+
+            // Auto-select 'best' for FMC and MBLD
+            if (eventId === '333mbf' || eventId === '333fm') {
+                resultType = 'best';
+                typeSelect.value = 'best';
+                typeSelect.disabled = true;
+            } else {
+                 typeSelect.disabled = false;
+            }
+
+            const wcaIds = wcaIdString.split(',')
+                .map(id => id.trim().toUpperCase())
+                .filter(id => /^\d{4}[A-Z]{4}\d{2}$/.test(id));
+
+            if (wcaIds.length === 0) {
+                 setMessage('No valid WCA IDs entered. Format: 2022ABCD01.', 'error');
+                 return { newLabels, newDatasets }; // Return empty data
+            }
+
+            // Fetch data for all IDs
+            const allDataPromises = wcaIds.map(id => fetchWcaData(id));
+            const allDataResults = await Promise.all(allDataPromises);
+
+            allDataResults.forEach((data, index) => {
+                if (data) {
+                    const personName = data.personName;
+                    const processedResults = processData(data, eventId, resultType, showDnfs);
+
+                    if (processedResults.length > 0) {
+                        processedResults.forEach(point => newLabels.add(point.x)); // Collect labels
+
+                        // Assign color based on the *total* number of datasets added so far
+                        const colorIndex = currentDatasetCount % chartColors.length;
+                        newDatasets.push({
+                            label: `${personName} (${wcaIds[index]}) ${eventId} ${resultType}`, // More descriptive label
+                            data: processedResults,
+                            borderColor: chartColors[colorIndex],
+                            backgroundColor: chartColors[colorIndex] + 'B3',
+                            tension: 0.1, fill: false, spanGaps: !showDnfs,
+                            pointRadius: 3.5, pointHoverRadius: 7,
+                            pointBackgroundColor: chartColors[colorIndex],
+                            borderWidth: 2.5
+                        });
+                        currentDatasetCount++; // Increment for next dataset's color
+                    } else {
+                         if (!messageArea.textContent.includes('Error')) { // Avoid overriding errors
+                            setMessage(`No results found for ${personName} (${wcaIds[index]}) for ${eventId} ${resultType}.`, 'info');
+                         }
+                    }
+                }
+            });
+
+            return { newLabels, newDatasets };
+        }
+
+        /**
+         * Updates the Chart.js instance with new data.
+         * @param {boolean} replaceExisting - If true, destroys the old chart and starts fresh.
+         */
+        async function updateChart(replaceExisting = true) {
+            setMessage(''); // Clear previous messages
+            setLoadingState(true);
+
+            if (replaceExisting && progressChart) {
+                progressChart.destroy();
+                progressChart = null;
+                currentDatasetCount = 0; // Reset color counter
+            }
+
+            const { newLabels, newDatasets } = await prepareChartData();
+
+            if (newDatasets.length === 0 && replaceExisting) {
+                 // If loading fresh and no data, show message and stop
+                 if (!messageArea.textContent) setMessage('No data to display for the selected criteria.', 'error');
+                 setLoadingState(false);
+                 return;
+            }
+             if (newDatasets.length === 0 && !replaceExisting) {
+                 // If adding and no data, show message and stop
+                 if (!messageArea.textContent) setMessage('No new data found for the current selection to add.', 'info');
+                 setLoadingState(false);
+                 return;
+            }
 
 
-    // Make a GET request
-    fetch(apiUrl)
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        filter(data);
-        //apiData = data;
-        //console.log(apiData)
-      })
-      .catch(error => console.error('Error fetching WCA api:', error));
+            // Determine Y-axis label and formatting (only needs to be set once or if event changes)
+            // This logic might need refinement if adding datasets with *different* event types
+            const eventId = eventSelect.value; // Get current event for axis formatting
+            let yAxisTitle = `Result (${typeSelect.value === 'average' ? 'Average' : 'Single'})`;
+            let yAxisFormatter = (value) => formatTime(value * 100);
+            if (eventId === '333fm') {
+                yAxisTitle = `Fewest Moves (${typeSelect.value === 'average' ? 'Average' : 'Single'})`;
+                yAxisFormatter = (value) => formatFmc(value);
+            } else if (eventId === '333mbf') {
+                 yAxisTitle = `Multi-Blind Score (${typeSelect.value === 'average' ? 'Average' : 'Single'})`;
+                 yAxisFormatter = (value) => formatMbld(value);
+            }
 
-    /*for (let i = 0; i < apiData.rank.averages.length; i++) {
-      if (apiData.rank.averages[i].eventId = "333"){
-        event = 
-      }
-    }*/
-}
-</script>
+            if (!progressChart) { // Create chart if it doesn't exist
+                progressChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [], // Start with empty labels and datasets
+                        datasets: []
+                    },
+                    options: { // Define options once
+                        responsive: true, maintainAspectRatio: false,
+                        parsing: { xAxisKey: 'x', yAxisKey: 'y' },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Competition (Round)', font: { weight: 'bold' } },
+                                ticks: { autoSkip: true, maxTicksLimit: 15, font: { size: 10 } }
+                            },
+                            y: { // Set title and formatter initially
+                                title: { display: true, text: yAxisTitle, font: { weight: 'bold' } },
+                                ticks: { callback: (v) => (v === null || typeof v === 'undefined') ? '' : yAxisFormatter(v) }
+                            }
+                        },
+                        plugins: { // Define plugins once
+                            tooltip: {
+                                enabled: true, mode: 'index', intersect: false,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)', titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 12 }, padding: 10, boxPadding: 4,
+                                callbacks: {
+                                    title: (items) => items[0]?.label || '',
+                                    label: (context) => {
+                                        let label = context.dataset.label || '';
+                                        const fullLabelParts = label.split(' '); // Split "Name (ID) Event Type"
+                                        const resultTypeLabel = fullLabelParts.pop(); // type
+                                        const eventLabel = fullLabelParts.pop(); // event
+                                        const nameIdLabel = fullLabelParts.join(' '); // Name (ID)
+
+                                        label = nameIdLabel ? `${nameIdLabel}: ` : '';
+                                        const rawValue = context.raw.rawValue;
+                                        if (rawValue !== null && rawValue !== undefined) {
+                                             // Use eventLabel to determine formatting for *this specific dataset*
+                                             if (eventLabel === '333fm') label += formatFmc(rawValue);
+                                             else if (eventLabel === '333mbf') label += formatMbld(rawValue);
+                                             else label += formatTime(rawValue);
+                                        } else {
+                                            label += formatTime(rawValue); // Show DNF/DNS if rawValue is -1/-2
+                                        }
+                                        return label;
+                                    },
+                                    labelColor: (context) => ({
+                                        borderColor: context.dataset.borderColor, backgroundColor: context.dataset.borderColor,
+                                        borderWidth: 0, borderRadius: 3,
+                                    }),
+                                }
+                            },
+                            legend: {
+                                position: 'bottom', align: 'center',
+                                labels: { usePointStyle: true, boxWidth: 10, padding: 20, font: { size: 12 } }
+                            }
+                        },
+                        interaction: { mode: 'index', axis: 'x', intersect: false },
+                        animation: { duration: 500 }, hover: { animationDuration: 0 }, responsiveAnimationDuration: 0
+                    }
+                });
+            }
+
+            // Add the new datasets
+            newDatasets.forEach(ds => progressChart.data.datasets.push(ds));
+
+            // Update Y-axis title and formatter based on the *last added* dataset's event type
+            // This assumes comparisons are meaningful mainly within the same event type (time vs time, moves vs moves)
+            // A more complex UI might be needed for comparing vastly different scales (e.g., 3x3 time vs MBLD score)
+             progressChart.options.scales.y.title.text = yAxisTitle;
+             progressChart.options.scales.y.ticks.callback = (v) => (v === null || typeof v === 'undefined') ? '' : yAxisFormatter(v);
+
+
+            // Merge and sort all labels
+            const existingLabels = new Set(progressChart.data.labels);
+            const combinedLabels = new Set([...existingLabels, ...newLabels]);
+            progressChart.data.labels = Array.from(combinedLabels).sort();
+
+            // Update the chart
+            progressChart.update();
+            setLoadingState(false);
+
+        }
+
+        // --- Event Listeners ---
+        loadChartBtn.addEventListener('click', () => updateChart(true)); // Replace existing chart
+        addToChartBtn.addEventListener('click', () => updateChart(false)); // Add to existing chart
+
+        // Optional: Initial load example
+        // window.onload = () => {
+        //     wcaIdsInput.value = '2022YAOC02';
+        //     updateChart(true);
+        // };
+
+    </script>
+
+</body>
+</html>

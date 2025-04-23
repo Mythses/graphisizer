@@ -34,8 +34,12 @@
         .chart-container {
             position: relative;
             width: 100%;
-            height: 0;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            /* Maintain aspect ratio - adjust padding-bottom as needed */
+            /* Example: 56.25% for 16:9, 75% for 4:3, 50% for 2:1 */
+            padding-bottom: 50%; /* Adjusted for potentially wider charts */
+            min-height: 300px; /* Minimum height */
+            max-height: 600px; /* Maximum height */
+            height: auto; /* Allow height to adjust */
         }
         canvas#progressChart {
             position: absolute;
@@ -57,19 +61,49 @@
         }
         /* Loading Spinner Style */
          #loadingIndicator svg {
-            animation: spin 1s linear infinite;
+             animation: spin 1s linear infinite;
          }
          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+             from { transform: rotate(0deg); }
+             to { transform: rotate(360deg); }
          }
          /* Button group styling */
          .button-group {
-            display: flex;
-            gap: 0.5rem; /* Space between buttons */
+             display: flex;
+             gap: 0.5rem; /* Space between buttons */
          }
          .button-group button {
-             flex-grow: 1; /* Allow buttons to grow */
+              flex-grow: 1; /* Allow buttons to grow */
+         }
+         /* Ensure form elements wrap nicely on smaller screens */
+         @media (max-width: 640px) {
+            #wcaForm {
+                grid-template-columns: 1fr; /* Stack elements vertically */
+            }
+            #wcaForm > div {
+                grid-column: auto / auto !important; /* Reset column spans */
+            }
+            .button-group {
+                flex-direction: column; /* Stack buttons vertically */
+            }
+         }
+         @media (min-width: 641px) and (max-width: 1024px) {
+             #wcaForm {
+                grid-template-columns: repeat(2, 1fr); /* Two columns on medium screens */
+             }
+             #wcaForm > div:nth-child(1) { /* WCA IDs input */
+                 grid-column: span 2; /* Make WCA IDs span full width */
+             }
+             #wcaForm > div:nth-child(5) { /* Button container */
+                 grid-column: span 2; /* Make buttons span full width */
+                 flex-direction: row; /* Keep buttons side-by-side */
+             }
+             .button-group {
+                 justify-content: flex-end; /* Align buttons to the right */
+             }
+             .button-group button {
+                 flex-grow: 0; /* Don't let buttons grow excessively */
+             }
          }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,9 +148,9 @@
                 <select name="type" id="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white transition duration-150 ease-in-out">
                     <option value="average">Average</option>
                     <option value="best">Single</option>
-                    </select>
+                 </select>
             </div>
-            <div>
+             <div>
                 <label for="showdnfs" class="block text-sm font-medium text-gray-700 mb-1">Show DNFs/DNSs</label>
                 <select name="showdnfs" id="showdnfs" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white transition duration-150 ease-in-out">
                     <option value="true">Yes (Show as Gaps)</option>
@@ -125,31 +159,31 @@
             </div>
             <div class="lg:col-start-5 flex flex-col sm:flex-row gap-2">
                  <button type="button" id="loadChartBtn" class="w-full sm:w-auto inline-flex justify-center py-2.5 px-5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
-                    Load Chart
-                </button>
+                     Load Chart
+                 </button>
                  <button type="button" id="addToChartBtn" class="w-full sm:w-auto inline-flex justify-center py-2.5 px-5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Add to Chart
-                </button>
+                     Add to Chart
+                 </button>
             </div>
         </form>
 
         <div id="messageArea" class="mb-4 text-center text-sm min-h-[20px]"></div>
-         <div id="loadingIndicator" class="flex items-center justify-center text-gray-600 mb-4 hidden">
-            <svg class="h-5 w-5 text-indigo-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading data...
-        </div>
+        <div id="loadingIndicator" class="flex items-center justify-center text-gray-600 mb-4 hidden">
+             <svg class="h-5 w-5 text-indigo-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+             </svg>
+             Loading data...
+         </div>
 
         <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
              <div class="chart-container">
-                <canvas id="progressChart"></canvas>
-            </div>
+                 <canvas id="progressChart"></canvas>
+             </div>
         </div>
 
         <div class="mt-6 text-xs text-gray-500 text-center">
-            Note: This tool plots historical results (times/moves). Due to API limitations (<a href="https://github.com/robiningelbrecht/wca-rest-api" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">robiningelbrecht/wca-rest-api</a>), plotting historical rank progress is not currently possible.
+            Note: This tool plots historical results (times/moves). Due to API limitations (<a href="https://github.com/robiningelbrecht/wca-rest-api" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">robiningelbrecht/wca-rest-api</a>), plotting historical rank progress is not currently possible. Data is fetched from a community-maintained source and may occasionally have delays or inconsistencies.
         </div>
     </div>
 
@@ -178,74 +212,177 @@
         const canvas = document.getElementById('progressChart');
         const ctx = canvas.getContext('2d');
 
-        // --- Formatting Functions (unchanged) ---
+        // --- Formatting Functions ---
+        /**
+         * Formats time in centiseconds into a readable string (MM:SS.ss or SS.ss).
+         * Handles DNF (-1) and DNS (-2).
+         * @param {number} centiseconds - Time in centiseconds.
+         * @returns {string} Formatted time string or DNF/DNS.
+         */
         function formatTime(centiseconds) {
             if (centiseconds === -1) return "DNF";
             if (centiseconds === -2) return "DNS";
-            if (centiseconds <= 0) return "N/A";
+            if (centiseconds === null || centiseconds === undefined || centiseconds <= 0) return "N/A"; // Handle null/undefined/zero
             const totalSeconds = centiseconds / 100;
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = (totalSeconds % 60);
-            if (minutes > 0) return `${minutes}:${seconds.toFixed(2).padStart(5, '0')}`;
+            if (minutes > 0) {
+                return `${minutes}:${seconds.toFixed(2).padStart(5, '0')}`;
+            }
             return `${seconds.toFixed(2)}`;
         }
-        function formatFmc(moves) {
-             if (moves === -1) return "DNF"; if (moves === -2) return "DNS"; if (moves <= 0) return "N/A";
-            return `${moves} moves`;
-        }
-        function formatMbld(value) {
-             if (value === -1) return "DNF"; if (value === -2) return "DNS"; if (value <= 0) return "N/A";
-            const s = value.toString().padStart(9, '0');
-            const difference = 99 - parseInt(s.substring(0, 2), 10);
-            const timeInSeconds = parseInt(s.substring(2, 7), 10);
-            const missed = parseInt(s.substring(7, 9), 10);
-            const solved = difference + missed; const attempted = solved + missed;
-            const points = 99 - parseInt(s.substring(0, 2), 10);
-            const minutes = Math.floor(timeInSeconds / 60); const seconds = timeInSeconds % 60;
-            const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            return `${points} pts (${solved}/${attempted} ${formattedTime})`;
-         }
 
-        // --- Data Fetching and Processing (Minor changes for flexibility) ---
+        /**
+         * Formats Fewest Moves results.
+         * Handles DNF (-1) and DNS (-2).
+         * @param {number} moves - Number of moves.
+         * @returns {string} Formatted moves string or DNF/DNS.
+         */
+        function formatFmc(moves) {
+             if (moves === -1) return "DNF";
+             if (moves === -2) return "DNS";
+             if (moves === null || moves === undefined || moves <= 0) return "N/A"; // Handle null/undefined/zero
+             return `${moves} moves`;
+        }
+
+        /**
+         * Formats Multi-Blind results (decodes the special format).
+         * Handles DNF (-1) and DNS (-2).
+         * @param {number} value - The encoded MBLD result value.
+         * @returns {string} Formatted MBLD result string or DNF/DNS.
+         */
+        function formatMbld(value) {
+             if (value === -1) return "DNF";
+             if (value === -2) return "DNS";
+             if (value === null || value === undefined || value <= 0) return "N/A"; // Handle null/undefined/zero
+
+             // MBLD format: DDTTTTTMM (9 digits)
+             // DD = 99 - points
+             // TTTTT = time in seconds
+             // MM = missed cubes
+             const s = value.toString().padStart(9, '0');
+             const difference = 99 - parseInt(s.substring(0, 2), 10); // This is the score (solved - missed)
+             const timeInSeconds = parseInt(s.substring(2, 7), 10);
+             const missed = parseInt(s.substring(7, 9), 10);
+             const solved = difference + missed;
+             const attempted = solved + missed;
+             const points = solved - missed; // Recalculate points for clarity
+
+             const minutes = Math.floor(timeInSeconds / 60);
+             const seconds = timeInSeconds % 60;
+             const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+             // Return format: "Points pts (Solved/Attempted Time)"
+             return `${points} pts (${solved}/${attempted} ${formattedTime})`;
+        }
+
+        // --- Data Fetching and Processing ---
+        /**
+         * Fetches WCA person data from the robiningelbrecht API.
+         * Includes improved error handling for network and data format issues.
+         * @param {string} wcaId - The WCA ID to fetch data for.
+         * @returns {Promise<object|null>} A promise that resolves with the person's data object or null if an error occurs.
+         */
         async function fetchWcaData(wcaId) {
-            // (Function remains the same as previous version)
             const apiUrl = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/master/api/persons/${wcaId.toUpperCase()}.json`;
+            let response; // Declare response outside try block to access it in catch
             try {
-                const response = await fetch(apiUrl, { cache: "no-cache" });
+                response = await fetch(apiUrl, { cache: "no-cache" }); // Fetch data
+
+                // Check if response status is not OK (e.g., 404, 500)
                 if (!response.ok) {
-                    if (response.status === 404) throw new Error(`WCA ID ${wcaId} not found.`);
-                    throw new Error(`Failed to fetch data for ${wcaId} (Status: ${response.status})`);
+                    if (response.status === 404) {
+                        throw new Error(`WCA ID ${wcaId} not found (404).`);
+                    }
+                    // Throw a generic error for other HTTP issues
+                    throw new Error(`Failed to fetch data for ${wcaId}. Status: ${response.status} ${response.statusText}`);
                 }
-                const data = await response.json();
-                if (!data || !data.results || !data.person) throw new Error(`Invalid data format received for ${wcaId}.`);
-                data.personName = data.person.name || wcaId; // Add name
-                return data;
+
+                // Try parsing the response as JSON
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    // If JSON parsing fails, log the raw text and throw a specific error
+                    console.error(`Failed to parse JSON for ${wcaId}. Response status: ${response.status}. Error:`, jsonError);
+                    try {
+                        const rawText = await response.text(); // Try to get raw text for debugging
+                        console.error(`Raw response text for ${wcaId}:`, rawText);
+                        throw new Error(`Received non-JSON response from server for ${wcaId}. Check console for details.`);
+                    } catch (textError) {
+                         console.error(`Could not get raw response text for ${wcaId}:`, textError);
+                         throw new Error(`Received non-JSON response from server for ${wcaId}, and could not read raw text.`);
+                    }
+                }
+
+                // Check if the parsed JSON data has the expected structure
+                // Ensure 'results' is an object (can be empty {}) and 'person' exists.
+                if (!data || typeof data.results !== 'object' || data.results === null || !data.person) {
+                    // Log the problematic data structure for debugging
+                    console.error(`Invalid data format received for ${wcaId}. Data:`, data);
+                    // Throw the specific error message
+                    throw new Error(`Invalid data format received for ${wcaId}. Expected 'results' (object) and 'person' keys. Check console.`);
+                }
+
+                // Add the person's name to the data object for easier access later
+                data.personName = data.person.name || wcaId; // Use WCA ID as fallback name
+                return data; // Return the valid data
+
             } catch (error) {
-                console.error(`Error fetching WCA data for ${wcaId}:`, error);
+                // Catch any error thrown during fetch, parsing, or validation
+                console.error(`Error processing WCA ID ${wcaId}:`, error);
+                // Display a user-friendly message (the error.message comes from the throw statements above)
                 setMessage(`Error for ${wcaId}: ${error.message}`, 'error');
-                return null;
+                return null; // Return null to indicate failure for this ID
             }
         }
 
+
+        /**
+         * Processes the fetched WCA data to extract results for a specific event and type.
+         * @param {object} data - The fetched data object from fetchWcaData.
+         * @param {string} eventId - The WCA event ID (e.g., '333', 'pyram').
+         * @param {string} resultType - 'best' or 'average'.
+         * @param {boolean} includeDnfs - Whether to include points for DNF/DNS results (plotted as null).
+         * @returns {Array<object>} An array of data points {x: label, y: value, rawValue: originalValue}.
+         */
         function processData(data, eventId, resultType, includeDnfs) {
-            // (Function remains the same as previous version)
             const results = [];
-            const competitions = data.results || {};
+            // Gracefully handle cases where data or data.results might be missing (though fetchWcaData should prevent this)
+            const competitions = data?.results || {};
+            // Sort competition IDs chronologically (assuming standard YYYYNAME## format)
             const competitionIds = Object.keys(competitions).sort();
+
             competitionIds.forEach(compId => {
                 const compResults = competitions[compId];
-                if (compResults[eventId]) {
+                // Check if results exist for the selected event in this competition
+                if (compResults && compResults[eventId]) {
                     compResults[eventId].forEach(roundResult => {
+                        // Get the specific result value (best or average)
                         const value = roundResult[resultType];
-                        if (!includeDnfs && value <= 0) return;
-                        const plotValue = (value !== undefined && value > 0) ? value : null;
-                        let yAxisValue = null;
-                        if (plotValue !== null) {
-                            if (eventId === '333fm' || eventId === '333mbf') yAxisValue = plotValue;
-                            else yAxisValue = plotValue / 100;
+
+                        // Skip DNF/DNS if includeDnfs is false
+                        if (!includeDnfs && (value === -1 || value === -2 || value === 0)) {
+                            return; // Skip this result
                         }
+
+                        // Determine the value to plot on the Y-axis
+                        let yAxisValue = null; // Default to null (gap in the line)
+                        if (value !== undefined && value !== null && value > 0) {
+                            // For time-based events, convert centiseconds to seconds for the Y-axis
+                            if (eventId !== '333fm' && eventId !== '333mbf') {
+                                yAxisValue = value / 100.0;
+                            } else {
+                                // For FMC (moves) and MBLD (score), use the raw value directly
+                                yAxisValue = value;
+                            }
+                        }
+
+                        // Add the data point
                         results.push({
-                            x: `${compId} (${roundResult.round})`, y: yAxisValue, rawValue: value
+                            x: `${compId} (${roundResult.round})`, // X-axis label: Competition (Round)
+                            y: yAxisValue,                         // Y-axis value (null for DNF/DNS/invalid)
+                            rawValue: value                        // Store the original value for tooltips
                         });
                     });
                 }
@@ -254,28 +391,49 @@
         }
 
         // --- UI Helper Functions ---
+        /**
+         * Sets a message in the message area.
+         * @param {string} text - The message text.
+         * @param {string} type - 'info' or 'error'.
+         */
         function setMessage(text, type = 'info') {
             messageArea.textContent = text;
             messageArea.className = `mb-4 text-center text-sm min-h-[20px] ${type === 'error' ? 'text-red-600 font-medium' : 'text-gray-600'}`;
         }
 
+        /**
+         * Shows or hides the loading indicator and disables/enables form controls.
+         * @param {boolean} isLoading - True to show loading, false to hide.
+         */
         function setLoadingState(isLoading) {
              if (isLoading) {
-                loadingIndicator.classList.remove('hidden');
-                loadChartBtn.disabled = true;
-                addToChartBtn.disabled = true; // Disable both while loading
+                 loadingIndicator.classList.remove('hidden');
+                 loadChartBtn.disabled = true;
+                 addToChartBtn.disabled = true; // Disable both while loading
+                 // Optionally disable other form inputs
+                 wcaIdsInput.disabled = true;
+                 eventSelect.disabled = true;
+                 typeSelect.disabled = true;
+                 showDnfsSelect.disabled = true;
              } else {
-                loadingIndicator.classList.add('hidden');
-                loadChartBtn.disabled = false;
-                // Only enable "Add to Chart" if a chart exists
-                addToChartBtn.disabled = !progressChart;
+                 loadingIndicator.classList.add('hidden');
+                 loadChartBtn.disabled = false;
+                 // Only enable "Add to Chart" if a chart exists
+                 addToChartBtn.disabled = !progressChart;
+                 // Re-enable form inputs
+                 wcaIdsInput.disabled = false;
+                 eventSelect.disabled = false;
+                 // Re-enable typeSelect only if not FMC/MBLD
+                 typeSelect.disabled = (eventSelect.value === '333fm' || eventSelect.value === '333mbf');
+                 showDnfsSelect.disabled = false;
              }
         }
 
         // --- Chart Update Logic ---
         /**
-         * Fetches data for the current form selections and prepares datasets.
-         * @returns {Promise<{newLabels: Set<string>, newDatasets: Array<object>}>}
+         * Fetches data for the current form selections and prepares datasets for Chart.js.
+         * Handles multiple WCA IDs.
+         * @returns {Promise<{newLabels: Set<string>, newDatasets: Array<object>}>} Object containing unique labels and dataset arrays.
          */
         async function prepareChartData() {
             const wcaIdString = wcaIdsInput.value.trim();
@@ -284,191 +442,285 @@
             const showDnfs = showDnfsSelect.value === 'true';
 
             const newDatasets = [];
-            const newLabels = new Set();
+            const newLabels = new Set(); // Use a Set to automatically handle unique labels
 
             if (!wcaIdString) {
                 setMessage('Please enter at least one WCA ID.', 'error');
                 return { newLabels, newDatasets }; // Return empty data
             }
 
-            // Auto-select 'best' for FMC and MBLD
+            // Auto-select 'best' for FMC and MBLD as 'average' is not applicable
             if (eventId === '333mbf' || eventId === '333fm') {
                 resultType = 'best';
-                typeSelect.value = 'best';
-                typeSelect.disabled = true;
+                typeSelect.value = 'best'; // Update dropdown
+                typeSelect.disabled = true; // Disable selection
             } else {
-                 typeSelect.disabled = false;
+                 typeSelect.disabled = false; // Re-enable if switching away from FMC/MBLD
             }
 
+            // Validate and sanitize WCA IDs
             const wcaIds = wcaIdString.split(',')
                 .map(id => id.trim().toUpperCase())
-                .filter(id => /^\d{4}[A-Z]{4}\d{2}$/.test(id));
+                .filter(id => /^\d{4}[A-Z]{4}\d{2}$/.test(id)); // Basic WCA ID format check
 
             if (wcaIds.length === 0) {
-                 setMessage('No valid WCA IDs entered. Format: 2022ABCD01.', 'error');
+                 setMessage('No valid WCA IDs entered. Format: YYYYNAME## (e.g., 2022YAOC02).', 'error');
                  return { newLabels, newDatasets }; // Return empty data
             }
 
-            // Fetch data for all IDs
+            // Fetch data for all valid WCA IDs concurrently
             const allDataPromises = wcaIds.map(id => fetchWcaData(id));
             const allDataResults = await Promise.all(allDataPromises);
 
+            let foundResults = false; // Flag to check if any data was successfully plotted
+
+            // Process results for each WCA ID
             allDataResults.forEach((data, index) => {
-                if (data) {
-                    const personName = data.personName;
+                if (data) { // Check if data fetching was successful (not null)
+                    const personName = data.personName; // Name added in fetchWcaData
                     const processedResults = processData(data, eventId, resultType, showDnfs);
 
                     if (processedResults.length > 0) {
-                        processedResults.forEach(point => newLabels.add(point.x)); // Collect labels
+                        foundResults = true; // Mark that we found some results
+                        // Collect all unique x-axis labels (Competition (Round)) from this dataset
+                        processedResults.forEach(point => newLabels.add(point.x));
 
-                        // Assign color based on the *total* number of datasets added so far
+                        // Assign a unique color based on the *total* number of datasets added so far
                         const colorIndex = currentDatasetCount % chartColors.length;
                         newDatasets.push({
-                            label: `${personName} (${wcaIds[index]}) ${eventId} ${resultType}`, // More descriptive label
-                            data: processedResults,
+                            label: `${personName} (${wcaIds[index]}) - ${eventId} ${resultType}`, // Descriptive label
+                            data: processedResults, // The array of {x, y, rawValue} points
                             borderColor: chartColors[colorIndex],
-                            backgroundColor: chartColors[colorIndex] + 'B3',
-                            tension: 0.1, fill: false, spanGaps: !showDnfs,
-                            pointRadius: 3.5, pointHoverRadius: 7,
+                            backgroundColor: chartColors[colorIndex] + 'B3', // Slightly transparent fill
+                            tension: 0.1,         // Slight curve to the line
+                            fill: false,          // Don't fill area under the line by default
+                            spanGaps: !showDnfs,  // Connect line over null points if DNFs are hidden
+                            pointRadius: 3.5,       // Size of the data points
+                            pointHoverRadius: 7,  // Size on hover
                             pointBackgroundColor: chartColors[colorIndex],
-                            borderWidth: 2.5
+                            borderWidth: 2.5        // Line thickness
                         });
-                        currentDatasetCount++; // Increment for next dataset's color
+                        currentDatasetCount++; // Increment for the next dataset's color
                     } else {
-                         if (!messageArea.textContent.includes('Error')) { // Avoid overriding errors
-                            setMessage(`No results found for ${personName} (${wcaIds[index]}) for ${eventId} ${resultType}.`, 'info');
+                         // Only show "No results" if no error message is already present for this ID
+                         if (!messageArea.textContent.includes(`Error for ${wcaIds[index]}`)) {
+                            // Append message if multiple IDs are processed
+                            let currentMsg = messageArea.textContent;
+                            let separator = currentMsg ? '; ' : '';
+                            setMessage(currentMsg + separator + `No results found for ${personName} (${wcaIds[index]}) for ${eventId} ${resultType}.`, 'info');
                          }
                     }
                 }
+                // If data is null, an error message was already set by fetchWcaData
             });
+
+             // If after processing all IDs, no results were found at all, set a clear message
+             if (!foundResults && newDatasets.length === 0 && !messageArea.textContent.includes('Error')) {
+                 setMessage('No results found for the selected criteria across all valid WCA IDs.', 'info');
+             }
+
 
             return { newLabels, newDatasets };
         }
 
         /**
-         * Updates the Chart.js instance with new data.
-         * @param {boolean} replaceExisting - If true, destroys the old chart and starts fresh.
+         * Updates the Chart.js instance with new data, either replacing or adding datasets.
+         * @param {boolean} replaceExisting - If true, destroys the old chart and starts fresh. If false, adds to the existing chart.
          */
         async function updateChart(replaceExisting = true) {
-            setMessage(''); // Clear previous messages
+            setMessage(''); // Clear previous messages on new action
             setLoadingState(true);
 
             if (replaceExisting && progressChart) {
-                progressChart.destroy();
+                progressChart.destroy(); // Remove the old chart
                 progressChart = null;
-                currentDatasetCount = 0; // Reset color counter
+                currentDatasetCount = 0; // Reset color counter for new chart
             }
 
+            // Fetch and process data based on current form selections
             const { newLabels, newDatasets } = await prepareChartData();
 
-            if (newDatasets.length === 0 && replaceExisting) {
-                 // If loading fresh and no data, show message and stop
-                 if (!messageArea.textContent) setMessage('No data to display for the selected criteria.', 'error');
-                 setLoadingState(false);
-                 return;
-            }
-             if (newDatasets.length === 0 && !replaceExisting) {
-                 // If adding and no data, show message and stop
-                 if (!messageArea.textContent) setMessage('No new data found for the current selection to add.', 'info');
-                 setLoadingState(false);
-                 return;
-            }
+            // --- Early exit conditions ---
+             if (newDatasets.length === 0) {
+                 if (replaceExisting) {
+                     // If loading fresh and no data/errors, ensure the message area reflects this
+                     if (!messageArea.textContent) {
+                         setMessage('No data to display for the selected criteria.', 'info');
+                     }
+                     // Clear canvas if replacing and no data found
+                     if(progressChart) progressChart.clear();
 
+                 } else {
+                     // If adding and no new data found for the *current* selection
+                      if (!messageArea.textContent.includes('Error')) { // Don't override error messages
+                         setMessage('No new data found for the current selection to add.', 'info');
+                      }
+                 }
+                 setLoadingState(false); // Stop loading indicator
+                 // Enable 'Add to Chart' only if a chart *already* exists, even if *this* add operation found nothing
+                 addToChartBtn.disabled = !progressChart;
+                 return; // Stop further processing
+             }
 
-            // Determine Y-axis label and formatting (only needs to be set once or if event changes)
-            // This logic might need refinement if adding datasets with *different* event types
-            const eventId = eventSelect.value; // Get current event for axis formatting
-            let yAxisTitle = `Result (${typeSelect.value === 'average' ? 'Average' : 'Single'})`;
-            let yAxisFormatter = (value) => formatTime(value * 100);
-            if (eventId === '333fm') {
-                yAxisTitle = `Fewest Moves (${typeSelect.value === 'average' ? 'Average' : 'Single'})`;
+            // --- Determine Y-axis formatting based on the *first* dataset being added/loaded ---
+            // This assumes users primarily compare results of the same event type.
+            // Comparing times vs moves vs MBLD scores on the same axis might be confusing without further UI changes.
+            const firstDatasetEvent = newDatasets[0].label.split(' - ')[1].split(' ')[0]; // Extract eventId like '333'
+            const firstDatasetType = newDatasets[0].label.split(' ').pop(); // Extract type 'best' or 'average'
+            let yAxisTitle = `Result (${firstDatasetType === 'average' ? 'Average' : 'Single'})`;
+            let yAxisFormatter = (value) => formatTime(value * 100); // Default to time
+
+            if (firstDatasetEvent === '333fm') {
+                yAxisTitle = `Fewest Moves (${firstDatasetType === 'average' ? 'Average' : 'Single'})`;
+                // FMC values are stored directly as moves, format using formatFmc
                 yAxisFormatter = (value) => formatFmc(value);
-            } else if (eventId === '333mbf') {
-                 yAxisTitle = `Multi-Blind Score (${typeSelect.value === 'average' ? 'Average' : 'Single'})`;
+            } else if (firstDatasetEvent === '333mbf') {
+                 yAxisTitle = `Multi-Blind Score (${firstDatasetType === 'average' ? 'Average' : 'Single'})`;
+                 // MBLD values are stored directly as the encoded score, format using formatMbld
                  yAxisFormatter = (value) => formatMbld(value);
             }
 
-            if (!progressChart) { // Create chart if it doesn't exist
+            // --- Initialize or Update Chart ---
+            if (!progressChart) { // Create chart instance if it doesn't exist
                 progressChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: [], // Start with empty labels and datasets
-                        datasets: []
+                        labels: [], // Initialize with empty labels
+                        datasets: [] // Initialize with empty datasets
                     },
-                    options: { // Define options once
-                        responsive: true, maintainAspectRatio: false,
-                        parsing: { xAxisKey: 'x', yAxisKey: 'y' },
+                    options: {
+                        responsive: true,           // Make chart responsive
+                        maintainAspectRatio: false, // Allow chart to fill container height/width
+                        parsing: {
+                            xAxisKey: 'x', // Tell Chart.js to use the 'x' property for the x-axis
+                            yAxisKey: 'y'  // Tell Chart.js to use the 'y' property for the y-axis
+                        },
                         scales: {
                             x: {
                                 title: { display: true, text: 'Competition (Round)', font: { weight: 'bold' } },
-                                ticks: { autoSkip: true, maxTicksLimit: 15, font: { size: 10 } }
+                                ticks: {
+                                    autoSkip: true,     // Automatically skip labels to prevent overlap
+                                    maxTicksLimit: 15, // Limit the number of visible ticks
+                                    font: { size: 10 }  // Smaller font for x-axis labels
+                                }
                             },
-                            y: { // Set title and formatter initially
+                            y: { // Set initial title and formatter
                                 title: { display: true, text: yAxisTitle, font: { weight: 'bold' } },
-                                ticks: { callback: (v) => (v === null || typeof v === 'undefined') ? '' : yAxisFormatter(v) }
+                                ticks: {
+                                    // Format Y-axis ticks using the determined formatter
+                                    callback: (value) => {
+                                        // Check if value is null or undefined before formatting
+                                        if (value === null || typeof value === 'undefined') return '';
+                                        return yAxisFormatter(value);
+                                    }
+                                },
+                                beginAtZero: (firstDatasetEvent !== '333mbf') // Start axis at zero, except maybe for MBLD scores
                             }
                         },
-                        plugins: { // Define plugins once
+                        plugins: {
                             tooltip: {
-                                enabled: true, mode: 'index', intersect: false,
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)', titleFont: { size: 14, weight: 'bold' },
-                                bodyFont: { size: 12 }, padding: 10, boxPadding: 4,
+                                enabled: true,         // Enable tooltips
+                                mode: 'index',         // Show tooltips for all datasets at the same index
+                                intersect: false,      // Tooltip appears even if not directly hovering over point
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark tooltip background
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                padding: 10,
+                                boxPadding: 4,         // Padding within the tooltip box
                                 callbacks: {
-                                    title: (items) => items[0]?.label || '',
+                                    // Set the title of the tooltip (Competition (Round))
+                                    title: (tooltipItems) => tooltipItems[0]?.label || '',
+                                    // Format the label for each dataset in the tooltip
                                     label: (context) => {
-                                        let label = context.dataset.label || '';
-                                        const fullLabelParts = label.split(' '); // Split "Name (ID) Event Type"
-                                        const resultTypeLabel = fullLabelParts.pop(); // type
-                                        const eventLabel = fullLabelParts.pop(); // event
-                                        const nameIdLabel = fullLabelParts.join(' '); // Name (ID)
+                                        let label = context.dataset.label || ''; // Get the full dataset label
+                                        // Extract parts for better formatting in tooltip
+                                        const fullLabelParts = label.split(' - '); // "Name (ID)", "Event Type"
+                                        const nameIdLabel = fullLabelParts[0];
+                                        const eventTypeLabel = fullLabelParts[1] || ''; // "333 best"
+                                        const eventLabel = eventTypeLabel.split(' ')[0]; // "333"
 
-                                        label = nameIdLabel ? `${nameIdLabel}: ` : '';
-                                        const rawValue = context.raw.rawValue;
+                                        label = nameIdLabel ? `${nameIdLabel}: ` : ''; // Start with "Name (ID): "
+
+                                        const rawValue = context.raw.rawValue; // Get the original value
+
+                                        // Format the raw value based on the event type for *this specific dataset*
                                         if (rawValue !== null && rawValue !== undefined) {
-                                             // Use eventLabel to determine formatting for *this specific dataset*
                                              if (eventLabel === '333fm') label += formatFmc(rawValue);
                                              else if (eventLabel === '333mbf') label += formatMbld(rawValue);
-                                             else label += formatTime(rawValue);
+                                             else label += formatTime(rawValue); // Default to time formatting
                                         } else {
-                                            label += formatTime(rawValue); // Show DNF/DNS if rawValue is -1/-2
+                                             // Handle cases where rawValue might be explicitly null/undefined, or implicitly if y is null
+                                             // Use formatTime which handles DNF/DNS/-1/-2 correctly
+                                             label += formatTime(rawValue);
                                         }
                                         return label;
                                     },
+                                    // Style the color box next to each label in the tooltip
                                     labelColor: (context) => ({
-                                        borderColor: context.dataset.borderColor, backgroundColor: context.dataset.borderColor,
-                                        borderWidth: 0, borderRadius: 3,
+                                        borderColor: context.dataset.borderColor,
+                                        backgroundColor: context.dataset.borderColor,
+                                        borderWidth: 2, // Make the color box visible
+                                        borderRadius: 3,
                                     }),
                                 }
                             },
                             legend: {
-                                position: 'bottom', align: 'center',
-                                labels: { usePointStyle: true, boxWidth: 10, padding: 20, font: { size: 12 } }
+                                position: 'bottom', // Place legend below the chart
+                                align: 'center',    // Center the legend items
+                                labels: {
+                                    usePointStyle: true, // Use point style (circle/etc.) instead of box
+                                    boxWidth: 10,      // Width of the color indicator
+                                    padding: 20,       // Spacing around the legend
+                                    font: { size: 12 }
+                                }
                             }
                         },
-                        interaction: { mode: 'index', axis: 'x', intersect: false },
-                        animation: { duration: 500 }, hover: { animationDuration: 0 }, responsiveAnimationDuration: 0
+                        // Performance optimizations
+                        interaction: { mode: 'index', axis: 'x', intersect: false }, // Optimize hover/tooltip interactions
+                        animation: { duration: 500 }, // Short animation on load/update
+                        hover: { animationDuration: 0 }, // No animation on hover
+                        responsiveAnimationDuration: 0 // No animation on resize
                     }
                 });
+            } else {
+                // If chart exists, update Y-axis based on the *currently selected* event in the form
+                // This ensures the axis label matches the latest action (Load or Add)
+                 const currentEventId = eventSelect.value;
+                 const currentResultType = typeSelect.value; // Use the actual selected type now
+                 let currentYAxisTitle = `Result (${currentResultType === 'average' ? 'Average' : 'Single'})`;
+                 let currentYAxisFormatter = (value) => formatTime(value * 100);
+
+                 if (currentEventId === '333fm') {
+                     currentYAxisTitle = `Fewest Moves (${currentResultType === 'average' ? 'Average' : 'Single'})`;
+                     currentYAxisFormatter = (value) => formatFmc(value);
+                 } else if (currentEventId === '333mbf') {
+                     currentYAxisTitle = `Multi-Blind Score (${currentResultType === 'average' ? 'Average' : 'Single'})`;
+                     currentYAxisFormatter = (value) => formatMbld(value);
+                 }
+                 progressChart.options.scales.y.title.text = currentYAxisTitle;
+                 progressChart.options.scales.y.ticks.callback = (v) => (v === null || typeof v === 'undefined') ? '' : currentYAxisFormatter(v);
+                 progressChart.options.scales.y.beginAtZero = (currentEventId !== '333mbf');
             }
 
-            // Add the new datasets
+
+            // Add the newly prepared datasets to the chart
             newDatasets.forEach(ds => progressChart.data.datasets.push(ds));
 
-            // Update Y-axis title and formatter based on the *last added* dataset's event type
-            // This assumes comparisons are meaningful mainly within the same event type (time vs time, moves vs moves)
-            // A more complex UI might be needed for comparing vastly different scales (e.g., 3x3 time vs MBLD score)
-             progressChart.options.scales.y.title.text = yAxisTitle;
-             progressChart.options.scales.y.ticks.callback = (v) => (v === null || typeof v === 'undefined') ? '' : yAxisFormatter(v);
-
-
-            // Merge and sort all labels
+            // Combine existing labels with new labels, ensure uniqueness, and sort them
             const existingLabels = new Set(progressChart.data.labels);
             const combinedLabels = new Set([...existingLabels, ...newLabels]);
-            progressChart.data.labels = Array.from(combinedLabels).sort();
+            // Sort labels chronologically based on competition ID (YYYYNAME## format)
+            progressChart.data.labels = Array.from(combinedLabels).sort((a, b) => {
+                // Extract competition ID part for sorting
+                const compA = a.split(' ')[0];
+                const compB = b.split(' ')[0];
+                return compA.localeCompare(compB); // Simple string comparison works for this format
+            });
 
-            // Update the chart
+            // Update the chart to reflect new data and labels
             progressChart.update();
-            setLoadingState(false);
+            setLoadingState(false); // Hide loading indicator
+            addToChartBtn.disabled = false; // Enable "Add to Chart" now that a chart exists/was updated
 
         }
 
@@ -476,10 +728,20 @@
         loadChartBtn.addEventListener('click', () => updateChart(true)); // Replace existing chart
         addToChartBtn.addEventListener('click', () => updateChart(false)); // Add to existing chart
 
-        // Optional: Initial load example
+        // Update result type dropdown availability when event changes
+        eventSelect.addEventListener('change', () => {
+             if (eventSelect.value === '333fm' || eventSelect.value === '333mbf') {
+                 typeSelect.value = 'best';
+                 typeSelect.disabled = true;
+             } else {
+                 typeSelect.disabled = false;
+             }
+        });
+
+        // Optional: Trigger initial load on page load (e.g., with a default WCA ID)
         // window.onload = () => {
-        //     wcaIdsInput.value = '2022YAOC02';
-        //     updateChart(true);
+        //      wcaIdsInput.value = '2022YAOC02'; // Example default ID
+        //      updateChart(true); // Load the chart initially
         // };
 
     </script>

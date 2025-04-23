@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,32 +6,28 @@
     <title>WCA Progress Chart</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles if needed, though Tailwind should cover most */
         body {
-            font-family: 'Inter', sans-serif; /* Using Inter font from Tailwind defaults */
+            font-family: 'Inter', sans-serif;
         }
-        /* Ensure chart container allows canvas to resize and take full width */
         .chart-container {
             position: relative;
-            height: 70vh; /* Adjust height as needed for better vertical space */
+            height: 60vh;
             width: 100%;
         }
-        /* Style for loading/error messages */
         #message-area {
-            min-height: 2rem; /* Reserve space */
+            min-height: 2rem;
         }
     </style>
-     <link rel="preconnect" href="https://fonts.googleapis.com">
-     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800">
-
-    <div class="container mx-auto p-4 md:p-8">
+    <div class="container mx-auto p-4 md:p-6 lg:p-8">
         <h1 class="text-3xl font-bold mb-6 text-center text-blue-700">WCA Progress Tracker</h1>
 
-        <form id="wca-form" class="bg-white p-6 rounded-lg shadow-md mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 items-end">
+        <form id="wca-form" class="bg-white p-4 md:p-6 lg:p-8 rounded-lg shadow-md mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
             <div>
                 <label for="event" class="block text-sm font-medium text-gray-700 mb-1">Event:</label>
                 <select name="event" id="event" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -68,7 +64,7 @@
                 </select>
             </div>
 
-             <div>
+            <div>
                 <label for="showdnfs" class="block text-sm font-medium text-gray-700 mb-1">Show DNFs:</label>
                 <select name="showdnfs" id="showdnfs" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="True">Yes</option>
@@ -76,13 +72,10 @@
                 </select>
             </div>
 
-            <div class="hidden md:block"></div>
-            <div class="hidden md:block"></div>
-
-            <div class="sm:col-span-2 md:col-span-4 lg:col-span-2">
-                 <button type="button" id="submit" class="w-full mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out disabled:opacity-50">
+            <div class="sm:col-span-2 md:col-span-4">
+                <button type="button" id="submit" class="w-full mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out disabled:opacity-50">
                     Load Chart
-                 </button>
+                </button>
             </div>
         </form>
 
@@ -96,7 +89,7 @@
     </div>
 
     <script>
-        let progressChart = null; // Use let instead of var
+        let progressChart = null;
         const submitButton = document.getElementById('submit');
         const wcaIdInput = document.getElementById('wcaid');
         const eventSelect = document.getElementById('event');
@@ -106,48 +99,36 @@
         const canvas = document.getElementById('myChart');
         const ctx = canvas.getContext('2d');
 
-        // --- Helper Functions ---
-
-        // Formats seconds into MM:SS.ss or SS.ss format
         function formatTime(value, event) {
-            if (value <= 0) return "DNF"; // Handle DNF values explicitly
+            if (value <= 0) return "DNF";
             if (event === "333fm" || event === "333mbf") {
-                // FMC is moves, MBLD is points (decoded later) - return as is for now
-                // MBLD specific formatting might be needed if API provides raw data
                 if (event === "333mbf") {
-                    // Example MBLD decode: 99 - (difference * 100 + time) / 10000000
-                    // Assuming 'value' here is the direct result number like 197052103
-                    // This requires understanding the exact encoding used in the API source
-                    // For simplicity, just display the raw value or a placeholder
-                    // return `MBLD: ${value}`; // Placeholder
-                    let difference = Math.floor(value / 100000000); // DD
+                    let difference = Math.floor(value / 100000000);
                     let points = 99 - difference;
-                    let timeSeconds = (value % 10000000) / 100; // TTTTT.ss
-                    let missed = (value % 100000000 - value % 10000000) / 10000000; // MM
+                    let timeSeconds = (value % 10000000) / 100;
+                    let missed = (value % 100000000 - value % 10000000) / 10000000;
                     let solved = points + missed;
-                    return `<span class="math-inline"><span class="math-inline">\\\{solved\\\}/</span\></span>\{solved+missed\} ${formatTime(timeSeconds, 'time')}`; // Format time part
+                    return `${solved}/${solved+missed} ${formatTime(timeSeconds, 'time')}`;
                 }
-                return value; // Return FMC moves as is
+                return value;
             }
 
-            // Standard time formatting
             const seconds = parseFloat(value);
             if (isNaN(seconds)) return "N/A";
 
             if (seconds >= 60) {
                 const minutes = Math.floor(seconds / 60);
                 const remainingSeconds = (seconds % 60).toFixed(2);
-                return `<span class="math-inline"><span class="math-inline">\\\{minutes\\\}\\\:</span\></span>\{remainingSeconds < 10 ? '0' : ''\}${remainingSeconds}`;
+                return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
             } else {
                 return seconds.toFixed(2);
             }
         }
 
-        // --- Main Chart Loading Function ---
         function loadChart() {
             const wcaId = wcaIdInput.value.trim();
             const event = eventSelect.value;
-            let type = typeSelect.value; // Use let as it might change
+            let type = typeSelect.value;
             const showdnfs = showDnfsSelect.value;
 
             if (!wcaId) {
@@ -156,28 +137,19 @@
                 return;
             }
 
-            // Handle MBLD: always 'best', disable type selection visually if desired
             if (event === "333mbf") {
                 type = "best";
                 typeSelect.value = "best";
-                // Optionally disable the type dropdown when MBLD is selected
-                // typeSelect.disabled = true;
-            } else {
-                // Re-enable if previously disabled
-                // typeSelect.disabled = false;
             }
 
-
-            // Clear previous chart and messages
             if (progressChart) {
                 progressChart.destroy();
                 progressChart = null;
             }
             messageArea.textContent = 'Loading data...';
             messageArea.className = 'text-center mb-4 text-blue-600 font-medium';
-            submitButton.disabled = true; // Disable button during load
+            submitButton.disabled = true;
 
-            // --- Data Fetching ---
             const apiUrl = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/master/api/persons/${wcaId.toUpperCase()}.json`;
 
             fetch(apiUrl)
@@ -188,64 +160,54 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log("API Data:", data); // Log received data
+                    console.log("API Data:", data);
                     if (!data || !data.results) {
-                         throw new Error("Invalid data structure received from API.");
+                        throw new Error("Invalid data structure received from API.");
                     }
                     processAndDrawChart(data, wcaId, event, type, showdnfs);
-                    messageArea.textContent = ''; // Clear loading message
+                    messageArea.textContent = '';
                 })
                 .catch(error => {
                     console.error('Error fetching or processing WCA data:', error);
                     messageArea.textContent = `Error: ${error.message}. Could not load data for ${wcaId}. Check the ID or API source.`;
                     messageArea.className = 'text-center mb-4 text-red-600 font-medium';
-                    // Clear canvas if error occurs after chart init attempt
                     if (progressChart) {
                         progressChart.destroy();
                         progressChart = null;
                     } else {
-                        // Ensure canvas is blank if it never got drawn
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                     }
                 })
                 .finally(() => {
-                    submitButton.disabled = false; // Re-enable button
+                    submitButton.disabled = false;
                 });
         }
 
-        // --- Data Processing and Chart Drawing ---
         function processAndDrawChart(data, wcaId, event, type, showdnfs) {
-            const solveData = []; // Store { x: label, y: value } for chart
+            const solveData = [];
 
-            // Iterate through competitions (keys of results object)
             const compKeys = Object.keys(data.results);
 
             for (const compKey of compKeys) {
                 const compResult = data.results[compKey];
-                // Check if the event exists for this competition
                 if (compResult && compResult[event] && Array.isArray(compResult[event])) {
                     compResult[event].forEach(roundResult => {
-                        // Check if the result type (best/average) exists and is valid
                         if (roundResult && roundResult.hasOwnProperty(type)) {
                             const value = roundResult[type];
 
-                            // Filter DNFs based on selection
-                            // WCA API uses 0 or negative for DNF/DNS
                             if (showdnfs === "False" && value <= 0) {
-                                return; // Skip this DNF result
+                                return;
                             }
 
                             let yValue;
-                            // MBLD and FMC have different value interpretations
                             if (event === "333mbf") {
-                                yValue = value; // Keep raw MBLD value for now, format in tooltip
+                                yValue = value;
                             } else if (event === "333fm") {
-                                yValue = value; // FMC is number of moves
+                                yValue = value;
                             } else {
-                                yValue = value / 100; // Convert centiseconds to seconds for time events
+                                yValue = value / 100;
                             }
 
-                            // Create label (Competition Name + Round)
                             const label = `${compKey} ${roundResult.round || ''}`.trim();
 
                             solveData.push({ x: label, y: yValue });
@@ -255,36 +217,33 @@
             }
 
             if (solveData.length === 0) {
-                messageArea.textContent = `No results found for <span class="math-inline">\{wcaId\} in <span class\="math\-inline"\></span>\{event\.toUpperCase\(\)\}\) \(</span>$\{type\}).`;
+                messageArea.textContent = `No results found for ${wcaId} in ${event} (${type}).`;
                 messageArea.className = 'text-center mb-4 text-orange-600 font-medium';
-                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas explicitly
-                return; // Stop if no data to plot
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
             }
 
-            // Reverse the array to make it chronological
             solveData.reverse();
 
-            // --- Draw Chart ---
             progressChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    // Use the processed solveData directly
                     datasets: [{
-                        label: `<span class="math-inline">\{wcaId\} \- <span class\="math\-inline"\></span>\{event\.toUpperCase\(\)\}\) \(</span>$\{type\})`,
-                        data: solveData, // Data points {x: label, y: value}
-                        borderColor: 'rgb(59, 130, 246)', // Blue color
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)', // Light blue fill
-                        tension: 0.1, // Slight curve
+                        label: `${wcaId} - ${event.toUpperCase()} (${type})`,
+                        data: solveData,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.1,
                         borderWidth: 2,
                         pointBackgroundColor: 'rgb(59, 130, 246)',
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        fill: true, // Add fill under the line
+                        fill: true,
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // Important for custom container size
+                    maintainAspectRatio: false,
                     scales: {
                         x: {
                             title: {
@@ -293,100 +252,96 @@
                                 font: { size: 14 }
                             },
                             ticks: {
-                                // Auto-skip ticks if too many labels
                                 autoSkip: true,
-                                maxTicksLimit: 15, // Adjust as needed
-                                maxRotation: 45, // Rotate labels if they overlap
+                                maxTicksLimit: 15,
+                                maxRotation: 45,
                                 minRotation: 0
+                            },
+                            grid: {
+                                display: false
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: (event === '333fm' || event === '333mbf') ? 'Result' : 'Time (seconds)', // Dynamic Y-axis label
+                                text: (event === '333fm' || event === '333mbf') ? 'Result' : 'Time (seconds)',
                                 font: { size: 14 }
                             },
                             ticks: {
-                                // Callback to format Y-axis ticks (times)
                                 callback: function(value, index, values) {
-                                    // Don't format FMC/MBLD axis, but format time axes
                                     if (event === '333fm' || event === '333mbf') {
-                                        if (event === '333mbf' && value > 1000) { // Basic check for raw MBLD value
-                                            return formatTime(value, event); // Attempt MBLD format
+                                        if (event === '333mbf' && value > 1000) {
+                                            return formatTime(value, event);
                                         }
-                                        return value; // Return raw number for FMC/MBLD
+                                        return value;
                                     }
-                                    // Only format if it's not a DNF placeholder (like 0 or negative)
-                                    // Chart.js might pass calculated ticks, ensure they are valid numbers
                                     if (typeof value === 'number' && value > 0) {
                                         return formatTime(value, event);
                                     }
-                                    // Handle 0 or potential negative axis values if chart auto-scales below 0
                                     return value <= 0 ? '0.00' : formatTime(value, event);
                                 }
+                            },
+                            grid: {
+                                color: '#e2e8f0'
                             }
-                        }
+                        },
                     },
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                // Format the value displayed in the tooltip
-                                label: function
-function(context) {
-                                                              let label = context.dataset.label || '';
-                                                              if (label) {
-                                                                  label += ': ';
-                                                              }
-                                                              const rawValue = context.raw.y;
-                                                              // Use the formatTime function for tooltip display
-                                                              label += formatTime(rawValue, event);
-                                                              return label;
-                                                        }
-                                                   }
-                                                },
-                                                legend: {
-                                                    position: 'top',
-                                                },
-                                                title: { // Chart
-                                                    display: true,
-                                                    text: `Progress for ${wcaId} - <span class="math-inline">\{event\.toUpperCase\(\)\} \(</span>{type})`,
-                                                    font: { size: 16 }
-                                                }
-                                           }
-                                    }
-                            });
-                }
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const rawValue = context.raw.y;
+                                    label += formatTime(rawValue, event);
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            align: 'center',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `Progress for ${wcaId} - ${event.toUpperCase()} (${type})`,
+                            font: { size: 16 },
+                            align: 'center'
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 0,
+                            bottom: 0
+                        }
+                    }
+                }
+            });
+        }
 
-                // --- Event Listeners ---
-                submitButton.addEventListener('click', loadChart);
+        submitButton.addEventListener('click', loadChart);
 
-                // Optional: Load chart on Enter key press in WCA ID input
-                wcaIdInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault(); // Prevent form submission if it were a real form
-                        loadChart();
-                    }
-                });
+        wcaIdInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadChart();
+            }
+        });
 
-                // Optional: Automatically adjust type for MBLD when event changes
-                eventSelect.addEventListener('change', () => {
-                    if (eventSelect.value === '333mbf') {
-                        typeSelect.value = 'best';
-                        // typeSelect.disabled = true; // Optional UI cue
-                    } else {
-                        // typeSelect.disabled = false; // Re-enable if needed
-                    }
-                });
-
-            </script>
-
-        </body>
-        </html>
-        
-        
-        
-        
-        
-        
-        
-     
+        eventSelect.addEventListener('change', () => {
+            if (eventSelect.value === '333mbf') {
+                typeSelect.value = 'best';
+            }
+        });
+    </script>
+</body>
+</html>

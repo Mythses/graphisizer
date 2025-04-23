@@ -333,7 +333,7 @@
 
             allDataResults.forEach((data, index) => {
                 if (data) { // Check if data fetching was successful for this ID
-                    const wcaId = data.person.wca_id || wcaIds[index]; // Use ID from data if available
+                    const wcaId = data.id || wcaIds[index]; // Use ID from data if available
                     const processedResults = processData(data, eventId, resultType);
 
                     if (processedResults.length > 0) {

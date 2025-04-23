@@ -17,9 +17,17 @@
             position: relative;
             height: 60vh;
             width: 100%;
+            min-height: 300px; /* Ensure a minimum height for the chart */
         }
         #message-area {
             min-height: 2rem;
+        }
+        .container {
+            max-width: 100%; /* Allow container to take full width */
+        }
+        #wca-form {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
+            gap: 1rem; /* Adjust gap as needed */
         }
     </style>
 </head>
@@ -61,8 +69,8 @@
                 <select name="type" id="type" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="average">Average</option>
                     <option value="best">Single</option>
-                    /<!-- <option value="all">All</option>
-                   <option value="national_single">National Rank (Single)</option>
+                    <!--<option value="all">All</option>
+                    <option value="national_single">National Rank (Single)</option>
                     <option value="national_average">National Rank (Average)</option>
                     <option value="continental_single">Continental Rank (Single)</option>
                     <option value="continental_average">Continental Rank (Average)</option>
